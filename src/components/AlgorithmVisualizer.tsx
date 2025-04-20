@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Algorithm, ArrayItem, convertToArrayItems, sleep } from "@/utils/algorithmUtils";
@@ -15,6 +14,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const [speed, setSpeed] = useState(50);
   const [searchValue, setSearchValue] = useState<number | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [stepExplanation, setStepExplanation] = useState<string>('');
 
   // Calculate the delay based on speed (inverse relationship)
   const delay = () => Math.max(10, Math.floor(1000 * (1 - speed / 100)));
@@ -47,12 +47,15 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeBubbleSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Bubble Sort...');
 
     const arrayCopy = [...array];
     const n = arrayCopy.length;
 
     for (let i = 0; i < n; i++) {
+      setStepExplanation(`Pass ${i + 1}: Moving largest unsorted element to position ${n - i}`);
       for (let j = 0; j < n - i - 1; j++) {
+        setStepExplanation(`Comparing elements at positions ${j + 1} and ${j + 2}`);
         // Mark elements being compared
         arrayCopy[j].state = 'compared';
         arrayCopy[j + 1].state = 'compared';
@@ -60,6 +63,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         await sleep(delay());
 
         if (arrayCopy[j].value > arrayCopy[j + 1].value) {
+          setStepExplanation(`${arrayCopy[j].value} is greater than ${arrayCopy[j + 1].value}, swapping them`);
           // Mark elements being swapped
           arrayCopy[j].state = 'swapping';
           arrayCopy[j + 1].state = 'swapping';
@@ -72,6 +76,8 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
           arrayCopy[j + 1] = temp;
           setArray([...arrayCopy]);
           await sleep(delay());
+        } else {
+          setStepExplanation(`${arrayCopy[j].value} is less than or equal to ${arrayCopy[j + 1].value}, no swap needed`);
         }
 
         // Reset the state of compared elements
@@ -81,6 +87,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         // Mark elements in sorted position
         if (j === n - i - 2) {
           arrayCopy[n - i - 1].state = 'sorted';
+          setStepExplanation(`Element ${arrayCopy[n - i - 1].value} is now in its final sorted position`);
         }
       }
     }
@@ -92,6 +99,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       await sleep(delay() / 2);
     }
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -99,6 +107,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeSelectionSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Selection Sort...');
 
     const arrayCopy = [...array];
     const n = arrayCopy.length;
@@ -106,10 +115,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
     for (let i = 0; i < n; i++) {
       let minIdx = i;
       arrayCopy[i].state = 'selected';
+      setStepExplanation(`Finding the minimum element from position ${i + 1} to ${n}`);
       setArray([...arrayCopy]);
       await sleep(delay());
 
       for (let j = i + 1; j < n; j++) {
+        setStepExplanation(`Comparing ${arrayCopy[j].value} with current minimum ${arrayCopy[minIdx].value}`);
         arrayCopy[j].state = 'compared';
         setArray([...arrayCopy]);
         await sleep(delay());
@@ -121,6 +132,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
           }
           minIdx = j;
           arrayCopy[minIdx].state = 'selected';
+          setStepExplanation(`Found new minimum: ${arrayCopy[minIdx].value}`);
         } else {
           arrayCopy[j].state = 'default';
         }
@@ -131,12 +143,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       // Swap elements if minimum is not already at position i
       if (minIdx !== i) {
+        setStepExplanation(`Swapping ${arrayCopy[i].value} with minimum value ${arrayCopy[minIdx].value}`);
         arrayCopy[i].state = 'swapping';
         arrayCopy[minIdx].state = 'swapping';
         setArray([...arrayCopy]);
         await sleep(delay());
 
-        // Swap elements
         const temp = arrayCopy[i];
         arrayCopy[i] = arrayCopy[minIdx];
         arrayCopy[minIdx] = temp;
@@ -145,10 +157,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       }
 
       arrayCopy[i].state = 'sorted';
+      setStepExplanation(`Position ${i + 1} is now sorted with value ${arrayCopy[i].value}`);
       setArray([...arrayCopy]);
       await sleep(delay());
     }
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -156,18 +170,21 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeInsertionSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Insertion Sort...');
 
     const arrayCopy = [...array];
     const n = arrayCopy.length;
 
     // Mark the first element as sorted
     arrayCopy[0].state = 'sorted';
+    setStepExplanation('First element is considered sorted by default');
     setArray([...arrayCopy]);
     await sleep(delay());
 
     for (let i = 1; i < n; i++) {
       const key = arrayCopy[i].value;
       arrayCopy[i].state = 'selected';
+      setStepExplanation(`Taking element ${key} to insert into sorted portion`);
       setArray([...arrayCopy]);
       await sleep(delay());
 
@@ -175,11 +192,13 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       while (j >= 0 && arrayCopy[j].value > key) {
         arrayCopy[j].state = 'compared';
+        setStepExplanation(`Comparing ${key} with ${arrayCopy[j].value}`);
         setArray([...arrayCopy]);
         await sleep(delay());
 
         arrayCopy[j].state = 'swapping';
         arrayCopy[j + 1].state = 'swapping';
+        setStepExplanation(`Moving ${arrayCopy[j].value} one position ahead`);
         setArray([...arrayCopy]);
         await sleep(delay());
 
@@ -197,10 +216,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       // Insert the key at the correct position
       arrayCopy[j + 1].value = key;
       arrayCopy[j + 1].state = 'sorted';
+      setStepExplanation(`Inserting ${key} at position ${j + 2}`);
       setArray([...arrayCopy]);
       await sleep(delay());
     }
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -208,10 +229,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeMergeSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Merge Sort...');
 
     const arrayCopy = [...array];
 
     async function merge(start: number, mid: number, end: number) {
+      setStepExplanation(`Merging subarrays from index ${start} to ${mid} and ${mid + 1} to ${end}`);
       const leftSize = mid - start + 1;
       const rightSize = end - mid;
 
@@ -224,11 +247,13 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         leftArray[i] = arrayCopy[start + i].value;
         arrayCopy[start + i].state = 'selected';
       }
+      setStepExplanation(`Copying left subarray: [${leftArray.join(', ')}]`);
 
       for (let i = 0; i < rightSize; i++) {
         rightArray[i] = arrayCopy[mid + 1 + i].value;
         arrayCopy[mid + 1 + i].state = 'compared';
       }
+      setStepExplanation(`Copying right subarray: [${rightArray.join(', ')}]`);
 
       setArray([...arrayCopy]);
       await sleep(delay());
@@ -239,6 +264,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       let k = start;
 
       while (i < leftSize && j < rightSize) {
+        setStepExplanation(`Comparing ${leftArray[i]} with ${rightArray[j]}`);
         // Highlight elements being compared
         arrayCopy[start + i].state = 'compared';
         arrayCopy[mid + 1 + j].state = 'compared';
@@ -246,6 +272,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         await sleep(delay());
 
         if (leftArray[i] <= rightArray[j]) {
+          setStepExplanation(`${leftArray[i]} is smaller or equal, placing it at position ${k + 1}`);
           arrayCopy[k].value = leftArray[i];
           arrayCopy[k].state = 'swapping';
           setArray([...arrayCopy]);
@@ -253,6 +280,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
           arrayCopy[k].state = 'default';
           i++;
         } else {
+          setStepExplanation(`${rightArray[j]} is smaller, placing it at position ${k + 1}`);
           arrayCopy[k].value = rightArray[j];
           arrayCopy[k].state = 'swapping';
           setArray([...arrayCopy]);
@@ -263,8 +291,9 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         k++;
       }
 
-      // Copy the remaining elements of leftArray
+      // Copy remaining elements
       while (i < leftSize) {
+        setStepExplanation(`Copying remaining element ${leftArray[i]} from left subarray`);
         arrayCopy[k].value = leftArray[i];
         arrayCopy[k].state = 'swapping';
         setArray([...arrayCopy]);
@@ -274,8 +303,8 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         k++;
       }
 
-      // Copy the remaining elements of rightArray
       while (j < rightSize) {
+        setStepExplanation(`Copying remaining element ${rightArray[j]} from right subarray`);
         arrayCopy[k].value = rightArray[j];
         arrayCopy[k].state = 'swapping';
         setArray([...arrayCopy]);
@@ -285,18 +314,19 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         k++;
       }
 
-      // Mark the merged section as temporarily sorted
+      // Mark the merged section as sorted
       for (let i = start; i <= end; i++) {
         arrayCopy[i].state = 'sorted';
         setArray([...arrayCopy]);
         await sleep(delay() / 2);
       }
+      setStepExplanation(`Subarray from ${start} to ${end} has been merged and sorted`);
     }
 
     async function mergeSortRecursive(start: number, end: number) {
       if (start < end) {
         const mid = Math.floor((start + end) / 2);
-
+        setStepExplanation(`Dividing array into two parts at index ${mid}`);
         await mergeSortRecursive(start, mid);
         await mergeSortRecursive(mid + 1, end);
         await merge(start, mid, end);
@@ -311,6 +341,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
     }
     setArray([...arrayCopy]);
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -318,6 +349,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeQuickSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Quick Sort...');
 
     const arrayCopy = [...array];
 
@@ -325,6 +357,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       // Choose the rightmost element as pivot
       const pivot = arrayCopy[high].value;
       arrayCopy[high].state = 'selected';
+      setStepExplanation(`Choosing ${pivot} as pivot element`);
       setArray([...arrayCopy]);
       await sleep(delay());
 
@@ -332,11 +365,13 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       for (let j = low; j < high; j++) {
         arrayCopy[j].state = 'compared';
+        setStepExplanation(`Comparing element ${arrayCopy[j].value} with pivot ${pivot}`);
         setArray([...arrayCopy]);
         await sleep(delay());
 
         if (arrayCopy[j].value <= pivot) {
           i++;
+          setStepExplanation(`${arrayCopy[j].value} is less than or equal to pivot ${pivot}, moving it to the left partition`);
 
           // Swap arrayCopy[i] and arrayCopy[j]
           if (i !== j) {
@@ -359,6 +394,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       }
 
       // Swap arrayCopy[i+1] and arrayCopy[high] (pivot)
+      setStepExplanation(`Moving pivot ${pivot} to its final sorted position`);
       arrayCopy[high].state = 'swapping';
       if (i + 1 !== high) {
         arrayCopy[i + 1].state = 'swapping';
@@ -377,6 +413,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       // Mark pivot in its final position
       arrayCopy[i + 1].state = 'sorted';
+      setStepExplanation(`Pivot ${pivot} is now in its final sorted position`);
       setArray([...arrayCopy]);
       await sleep(delay());
 
@@ -385,13 +422,18 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
     async function quickSortRecursive(low: number, high: number) {
       if (low < high) {
+        setStepExplanation(`Sorting subarray from index ${low} to ${high}`);
         const pivotIndex = await partition(low, high);
 
+        setStepExplanation(`Recursively sorting left partition (elements < ${arrayCopy[pivotIndex].value})`);
         await quickSortRecursive(low, pivotIndex - 1);
+
+        setStepExplanation(`Recursively sorting right partition (elements > ${arrayCopy[pivotIndex].value})`);
         await quickSortRecursive(pivotIndex + 1, high);
       } else if (low === high) {
         // Mark single elements as sorted
         arrayCopy[low].state = 'sorted';
+        setStepExplanation(`Single element ${arrayCopy[low].value} is already sorted`);
         setArray([...arrayCopy]);
         await sleep(delay());
       }
@@ -407,6 +449,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
     }
     setArray([...arrayCopy]);
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -414,6 +457,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
   const visualizeHeapSort = async () => {
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Heap Sort...');
 
     const arrayCopy = [...array];
     const n = arrayCopy.length;
@@ -423,7 +467,9 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       const left = 2 * rootIndex + 1;
       const right = 2 * rootIndex + 2;
 
-      // Highlight the current root
+      setStepExplanation(`Heapifying subtree with root at index ${rootIndex}`);
+
+      // Highlight the current root and its children
       arrayCopy[rootIndex].state = 'selected';
       setArray([...arrayCopy]);
       await sleep(delay());
@@ -431,6 +477,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       // Compare with left child
       if (left < size) {
         arrayCopy[left].state = 'compared';
+        setStepExplanation(`Comparing root ${arrayCopy[rootIndex].value} with left child ${arrayCopy[left].value}`);
         setArray([...arrayCopy]);
         await sleep(delay());
 
@@ -439,6 +486,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
           arrayCopy[largest].state = 'default';
           largest = left;
           arrayCopy[largest].state = 'selected';
+          setStepExplanation(`Left child ${arrayCopy[left].value} is larger than root`);
           setArray([...arrayCopy]);
           await sleep(delay());
         } else {
@@ -451,6 +499,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       // Compare with right child
       if (right < size) {
         arrayCopy[right].state = 'compared';
+        setStepExplanation(`Comparing current largest ${arrayCopy[largest].value} with right child ${arrayCopy[right].value}`);
         setArray([...arrayCopy]);
         await sleep(delay());
 
@@ -459,6 +508,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
           arrayCopy[largest].state = 'default';
           largest = right;
           arrayCopy[largest].state = 'selected';
+          setStepExplanation(`Right child ${arrayCopy[right].value} is the largest`);
           setArray([...arrayCopy]);
           await sleep(delay());
         } else {
@@ -470,6 +520,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       // If largest is not root, swap and continue heapifying
       if (largest !== rootIndex) {
+        setStepExplanation(`Swapping root ${arrayCopy[rootIndex].value} with largest child ${arrayCopy[largest].value}`);
         arrayCopy[rootIndex].state = 'swapping';
         arrayCopy[largest].state = 'swapping';
         setArray([...arrayCopy]);
@@ -497,12 +548,15 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
     }
 
     // Build max heap
+    setStepExplanation('Building max heap...');
     for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+      setStepExplanation(`Building max heap: heapifying subtree with root at index ${i}`);
       await heapify(n, i);
     }
 
     // Extract elements from heap one by one
     for (let i = n - 1; i > 0; i--) {
+      setStepExplanation(`Moving current root (largest element ${arrayCopy[0].value}) to the end`);
       // Move current root to end
       arrayCopy[0].state = 'swapping';
       arrayCopy[i].state = 'swapping';
@@ -517,10 +571,12 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       // Mark the element as sorted
       arrayCopy[i].state = 'sorted';
       arrayCopy[0].state = 'default';
+      setStepExplanation(`Element ${arrayCopy[i].value} is now in its final sorted position`);
       setArray([...arrayCopy]);
       await sleep(delay());
 
       // Heapify the reduced heap
+      setStepExplanation(`Heapifying reduced heap of size ${i}`);
       await heapify(i, 0);
     }
 
@@ -528,6 +584,7 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
     arrayCopy[0].state = 'sorted';
     setArray([...arrayCopy]);
 
+    setStepExplanation('Array has been successfully sorted!');
     setIsVisualizing(false);
     setResult("Array sorted successfully!");
   };
@@ -537,11 +594,14 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Linear Search...');
 
     const arrayCopy = [...array];
     let found = false;
+    let foundIndex = -1;
 
     for (let i = 0; i < arrayCopy.length; i++) {
+      setStepExplanation(`Checking element at position ${i + 1}: ${arrayCopy[i].value}`);
       // Highlight current element being checked
       arrayCopy[i].state = 'compared';
       setArray([...arrayCopy]);
@@ -549,11 +609,14 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       if (arrayCopy[i].value === searchValue) {
         // Mark as found
+        setStepExplanation(`Found ${searchValue} at position ${i + 1}!`);
         arrayCopy[i].state = 'selected';
         setArray([...arrayCopy]);
         found = true;
+        foundIndex = i;
         break;
       } else {
+        setStepExplanation(`${arrayCopy[i].value} is not equal to ${searchValue}, moving to next element`);
         // Reset state if not found
         arrayCopy[i].state = 'default';
         setArray([...arrayCopy]);
@@ -561,8 +624,9 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       }
     }
 
+    setStepExplanation(found ? `Search complete! ${searchValue} was found at position ${foundIndex + 1}` : `Search complete! ${searchValue} was not found in the array`);
     setIsVisualizing(false);
-    setResult(found ? `Value ${searchValue} found!` : `Value ${searchValue} not found in the array.`);
+    setResult(found ? `Value ${searchValue} found at position ${foundIndex + 1} (index ${foundIndex})!` : `Value ${searchValue} not found in the array.`);
   };
 
   const visualizeBinarySearch = async () => {
@@ -570,17 +634,23 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
     setIsVisualizing(true);
     setResult(null);
+    setStepExplanation('Starting Binary Search...');
 
     // First sort the array for binary search
     const arrayCopy = [...array].sort((a, b) => a.value - b.value);
+    setStepExplanation('Sorting array first (binary search requires a sorted array)');
     setArray(arrayCopy);
     await sleep(delay());
 
     let left = 0;
     let right = arrayCopy.length - 1;
     let found = false;
+    let foundIndex = -1;
 
     while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      setStepExplanation(`Searching in range from position ${left + 1} to ${right + 1}`);
+
       // Highlight the current search range
       for (let i = left; i <= right; i++) {
         arrayCopy[i].state = 'compared';
@@ -588,16 +658,17 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       setArray([...arrayCopy]);
       await sleep(delay());
 
-      const mid = Math.floor((left + right) / 2);
-
       // Highlight the middle element
       arrayCopy[mid].state = 'selected';
+      setStepExplanation(`Checking middle element at position ${mid + 1}: ${arrayCopy[mid].value}`);
       setArray([...arrayCopy]);
       await sleep(delay() * 2);
 
       if (arrayCopy[mid].value === searchValue) {
         // Value found
+        setStepExplanation(`Found ${searchValue} at position ${mid + 1}!`);
         found = true;
+        foundIndex = mid;
 
         // Reset all states except the found element
         for (let i = 0; i < arrayCopy.length; i++) {
@@ -609,12 +680,14 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
         setArray([...arrayCopy]);
         break;
       } else if (arrayCopy[mid].value < searchValue) {
+        setStepExplanation(`${arrayCopy[mid].value} is less than ${searchValue}, searching in right half`);
         // Reset left half states
         for (let i = left; i <= mid; i++) {
           arrayCopy[i].state = 'default';
         }
         left = mid + 1;
       } else {
+        setStepExplanation(`${arrayCopy[mid].value} is greater than ${searchValue}, searching in left half`);
         // Reset right half states
         for (let i = mid; i <= right; i++) {
           arrayCopy[i].state = 'default';
@@ -626,8 +699,9 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
       await sleep(delay());
     }
 
+    setStepExplanation(found ? `Search complete! ${searchValue} was found at position ${foundIndex + 1}` : `Search complete! ${searchValue} was not found in the array`);
     setIsVisualizing(false);
-    setResult(found ? `Value ${searchValue} found!` : `Value ${searchValue} not found in the array.`);
+    setResult(found ? `Value ${searchValue} found at position ${foundIndex + 1} (index ${foundIndex})!` : `Value ${searchValue} not found in the array.`);
   };
 
   const handleVisualize = () => {
@@ -680,11 +754,17 @@ const AlgorithmVisualizer = ({ algorithm, onClose }: AlgorithmVisualizerProps) =
 
       <div className="mt-6">
         <h3 className="text-lg font-medium mb-2">Visualization</h3>
+        {stepExplanation && (
+          <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+            <p className="text-sm">{stepExplanation}</p>
+          </div>
+        )}
         <div className="visualization-container">
           {array.map((item, index) => (
             <div
               key={index}
               className={`array-bar array-bar-${item.state} dynamic-bar`}
+              style={{ height: `${(item.value / 100) * 100}%` }}
             >
               {array.length <= 20 && (
                 <div className="text-xs text-center mt-2">{item.value}</div>
