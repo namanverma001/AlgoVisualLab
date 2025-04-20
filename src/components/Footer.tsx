@@ -43,7 +43,7 @@ const Footer = () => {
             
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <a 
-                href="https://github.com" 
+                href="https://github.com/namanverma001/AlgoVisualLab.git" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-algo-primary dark:hover:text-algo-accent transition-colors"
@@ -53,7 +53,7 @@ const Footer = () => {
               </a>
               
               <a 
-                href="https://example.com" 
+                href="https://www.namanverma.site" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:text-algo-primary dark:hover:text-algo-accent transition-colors"
